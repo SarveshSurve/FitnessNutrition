@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sarvesh's Fitness & Meal Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --border: #e8e5de;
+    --text: #1a1a18;
+    --muted: #7a7870;
+    --accent: #2d6a4f;
+    --accent-light: #e8f5ee;
+    --accent2: #c45c26;
+    --accent2-light: #fdf0e8;
+    --blue: #1e4d8c;
+    --blue-light: #e8f0fb;
+    --purple: #5c3d8f;
+    --purple-light: #f0ebfb;
+    --amber: #8a5c00;
+    --amber-light: #fdf5e0;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.5; }
+  
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { font-weight: 600; font-size: 16px; letter-spacing: -0.02em; }
+  .logo span { color: var(--accent); }
+  .target-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tpill { font-size: 11px; font-family: 'DM Mono', monospace; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+  .tpill-w { background: var(--accent-light); color: var(--accent); }
+  .tpill-r { background: var(--blue-light); color: var(--blue); }
+
+  .main-nav { display: flex; gap: 4px; padding: 16px 24px 0; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .mnav { padding: 9px 18px; font-size: 14px; font-weight: 500; border: none; background: none; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .mnav.active { color: var(--text); border-bottom-color: var(--accent); }
+
+  .content { max-width: 960px; margin: 0 auto; padding: 24px 20px; }
+
+  /* Day tabs */
+  .day-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+  .dtab { padding: 6px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); font-size: 13px; font-weight: 500; cursor: pointer; background: var(--surface); color: var(--muted); transition: all 0.12s; }
+  .dtab.active { background: var(--text); color: #fff; border-color: var(--text); }
+  .dtab.workout-day { border-color: var(--accent); color: var(--accent); }
+  .dtab.workout-day.active { background: var(--accent); color: #fff; }
+
+  /* Stats bar */
+  .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .stat-l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; font-family: 'DM Mono', monospace; }
+  .stat-v { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+  .stat-card.highlight { background: var(--accent-light); border-color: #b7dfc9; }
+  .stat-card.highlight .stat-v { color: var(--accent); }
+
+  /* Meal grid */
+  .meal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 600px) { .meal-grid { grid-template-columns: 1fr; } .stats-bar { grid-template-columns: repeat(2, 1fr); } }
+  .meal-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; position: relative; overflow: hidden; }
+  .meal-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .meal-card.breakfast::before { background: var(--amber); }
+  .meal-card.lunch::before { background: var(--accent); }
+  .meal-card.dinner::before { background: var(--blue); }
+  .meal-card.snack::before { background: var(--purple); }
+  .meal-type { font-size: 10px; font-family: 'DM Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+  .meal-name { font-size: 15px; font-weight: 600; margin-bottom: 5px; letter-spacing: -0.01em; }
+  .meal-desc { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 10px; }
+  .macro-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .mpill { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+  .mp-p { background: var(--blue-light); color: var(--blue); }
+  .mp-c { background: var(--accent-light); color: var(--accent); }
+  .mp-f { background: var(--amber-light); color: var(--amber); }
+  .prep-tag { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .workout-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--accent-light); color: var(--accent); font-weight: 500; margin-bottom: 10px; }
+  .rest-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--bg); color: var(--muted); font-weight: 500; margin-bottom: 10px; border: 1px solid var(--border); }
+
+  /* Workout */
+  .wo-day { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+  .wo-header { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; }
+  .wo-day-label { font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 500; color: var(--muted); min-width: 32px; }
+  .wo-title { font-size: 15px; font-weight: 600; flex: 1; letter-spacing: -0.01em; }
+  .wo-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+  .wb-run { background: var(--blue-light); color: var(--blue); }
+  .wb-circuit { background: var(--accent-light); color: var(--accent); }
+  .wb-strength { background: var(--amber-light); color: var(--amber); }
+  .wb-rest { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+  .wb-yoga { background: var(--purple-light); color: var(--purple); }
+  .wo-chevron { font-size: 13px; color: var(--muted); transition: transform 0.2s; }
+  .wo-body { border-top: 1px solid var(--border); padding: 14px 18px 16px; display: none; }
+  .wo-body.open { display: block; }
+  .wo-sub { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+  .ex-item { font-size: 13px; color: var(--text); padding: 5px 0; border-bottom: 1px solid var(--bg); display: flex; align-items: flex-start; gap: 8px; }
+  .ex-item:last-child { border-bottom: none; }
+  .ex-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-top: 6px; min-width: 6px; }
+  .wo-targets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bg); }
+  .wo-target-pill { font-size: 11px; font-family: 'DM Mono', monospace; padding: 2px 8px; border-radius: 20px; background: var(--bg); color: var(--muted); }
+
+  /* Grocery */
+  .grocery-section { margin-bottom: 20px; }
+  .grocery-section-title { font-size: 13px; font-weight: 600; color: var(--text); padding: 10px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .g-count { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); }
+  .grocery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; }
+  .g-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.12s; user-select: none; }
+  .g-item:hover { border-color: #c0bdb5; }
+  .g-item.done { opacity: 0.5; }
+  .g-item.done .g-name { text-decoration: line-through; }
+  .g-check { width: 18px; height: 18px; min-width: 18px; border-radius: 4px; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; margin-top: 1px; font-size: 11px; transition: all 0.12s; }
+  .g-item.done .g-check { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .g-name { font-size: 13px; font-weight: 500; line-height: 1.3; }
+  .g-qty { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+  .progress-bar-wrap { background: var(--bg); border-radius: 4px; height: 4px; margin-top: 8px; overflow: hidden; }
+  .progress-bar { height: 4px; background: var(--accent); border-radius: 4px; transition: width 0.3s; }
+  .grocery-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .g-progress-text { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .clear-btn { font-size: 12px; padding: 5px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); cursor: pointer; color: var(--muted); }
+
+  /* Prep guide */
+  .prep-step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; display: flex; gap: 14px; align-items: flex-start; }
+  .prep-num { width: 28px; height: 28px; min-width: 28px; border-radius: 50%; background: var(--text); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+  .prep-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .prep-detail { font-size: 13px; color: var(--muted); line-height: 1.55; }
+  .prep-time-tag { font-size: 11px; font-family: 'DM Mono', monospace; padding: 2px 8px; border-radius: 20px; background: var(--amber-light); color: var(--amber); display: inline-block; margin-top: 6px; }
+  .section-intro { background: var(--accent-light); border: 1px solid #b7dfc9; border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px; font-size: 13px; color: var(--accent); line-height: 1.6; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Sarvesh's <span>Fitness Plan</span></div>
+  <div class="target-pills">
+    <span class="tpill tpill-w">Workout days: 2,150 kcal · 148g protein</span>
+    <span class="tpill tpill-r">Rest days: 1,900 kcal · 125g protein</span>
+  </div>
+</header>
+
+<div class="main-nav">
+  <button class="mnav active" onclick="showSection('meals')">Meals</button>
+  <button class="mnav" onclick="showSection('workout')">Workout</button>
+  <button class="mnav" onclick="showSection('grocery')">Grocery</button>
+  <button class="mnav" onclick="showSection('prep')">Sunday Prep</button>
+</div>
+
+<div class="content">
+  <div id="meals-section">
+    <div class="day-tabs" id="day-tabs"></div>
+    <div class="stats-bar" id="stats-bar"></div>
+    <div id="day-status"></div>
+    <div class="meal-grid" id="meal-grid"></div>
+  </div>
+
+  <div id="workout-section" style="display:none">
+    <div class="section-intro">4-day endurance plan — Mon, Wed, Fri, Sat are training days. Tue, Thu, Sun are recovery. Whey shake pre-workout on training days.</div>
+    <div id="workout-list"></div>
+  </div>
+
+  <div id="grocery-section" style="display:none">
+    <div class="grocery-header">
+      <div class="g-progress-text" id="g-progress-text">0 / 0 items checked</div>
+      <button class="clear-btn" onclick="clearGrocery()">Clear all</button>
+    </div>
+    <div class="progress-bar-wrap" style="margin-bottom:20px;"><div class="progress-bar" id="g-progress-bar" style="width:0%"></div></div>
+    <div id="grocery-list"></div>
+  </div>
+
+  <div id="prep-section" style="display:none">
+    <div class="section-intro">Cook everything below on Sunday — takes about 2 hrs. This covers all your weekday lunches, dinners, and snacks. Mornings are always fresh (under 10 min).</div>
+    <div id="prep-list"></div>
+  </div>
+</div>
+
+<script>
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const WORKOUT_DAYS = ['Mon','Wed','Fri','Sat'];
+
+const mealData = {
+  Mon:{cals:2150,protein:148,carbs:215,fat:58,meals:[
+    {type:"Breakfast",cls:"breakfast",name:"Masala omelette + whey shake",desc:"3-egg masala omelette with onion, tomato, green chilli, coriander, cumin. Whey shake with milk — pre-workout fuel.",protein:48,carbs:22,fat:16,prep:"Fresh — 10 min"},
+    {type:"Lunch",cls:"lunch",name:"Tandoori chicken + rice + aloo gobi",desc:"Meal-prepped tandoori chicken thighs, basmati rice, spiced aloo gobi (potato & cauliflower). High carb for endurance.",protein:46,carbs:75,fat:14,prep:"Sunday prep — reheat 3 min"},
+    {type:"Dinner",cls:"dinner",name:"Chicken curry + 2 rotis",desc:"Dhaba-style chicken curry. Good protein + carb combo for overnight muscle repair. Rotis for extra carbs.",protein:38,carbs:52,fat:16,prep:"Sunday prep — reheat 3 min"},
+    {type:"Snack",cls:"snack",name:"Maple yogurt + banana",desc:"Liberté maple yogurt with sliced banana, pinch of cardamom and a few sunflower seeds. Great post-run snack.",protein:14,carbs:38,fat:5,prep:"3 min assemble"}
+  ]},
+  Tue:{cals:1900,protein:124,carbs:205,fat:52,meals:[
+    {type:"Breakfast",cls:"breakfast",name:"Maple yogurt parfait",desc:"Maple yogurt layered with granola, sliced banana, chopped almonds. No cooking needed — quick rest day start.",protein:16,carbs:50,fat:9,prep:"5 min assemble"},
+    {type:"Lunch",cls:"lunch",name:"Bang bang chicken + rice + peppers",desc:"Meal-prepped bang bang chicken with yogurt-chilli glaze over steamed rice, with stir-fried bell peppers & onions.",protein:46,carbs:68,fat:14,prep:"Sunday prep — reheat 3 min"},
+    {type:"Dinner",cls:"dinner",name:"Pork keema + peas + 2 rotis",desc:"Spiced pork mince with green peas, ginger-garlic, tomato, garam masala. Filling rest day dinner.",protein:40,carbs:44,fat:18,prep:"Sunday prep — reheat 3 min"},
+    {type:"Snack",cls:"snack",name:"Boiled egg chaat",desc:"2 boiled eggs sliced, sprinkled with chaat masala, lemon juice, coriander. Quick and high protein.",protein:12,carbs:4,fat:10,prep:"5 min"}
+  ]},
+  Wed:{cals:2150,protein:150,carbs:218,fat:57,meals:[
+    {type:"Breakfast",cls:"breakfast",name:"Egg bhurji + whey shake",desc:"3-egg scrambled with tomato, onion, turmeric, cumin on toast. Whey shake on the side for circuit day protein boost.",protein:50,carbs:26,fat:16,prep:"Fresh — 10 min"},
+    {type:"Lunch",cls:"lunch",name:"Bang bang chicken + rice",desc:"Second bang bang serving — great carb-protein ratio for endurance circuit recovery.",protein:46,carbs:68,fat:14,prep:"Sunday prep — reheat 3 min"},
+    {type:"Dinner",cls:"dinner",name:"Chicken curry + rice",desc:"Leftover curry over rice (swap roti for variety). Carb load supports Wednesday circuit recovery.",protein:38,carbs:58,fat:16,prep:"Sunday prep — reheat 3 min"},
+    {type:"Snack",cls:"snack",name:"Maple yogurt + roasted chana",desc:"Maple yogurt with a handful of spiced roasted chana stirred in — crunchy, high protein, great texture.",protein:18,carbs:30,fat:6,prep:"2 min"}
+  ]},
+  Thu:{cals:1900,protein:122,carbs:208,fat:53,meals:[
+    {type:"Breakfast",cls:"breakfast",name:"Overnight oats + maple yogurt",desc:"Oats soaked overnight in milk, topped with maple yogurt, banana slices, chia seeds and cardamom. Prep night before.",protein:18,carbs:58,fat:9,prep:"Prep night before — 5 min"},
+    {type:"Lunch",cls:"lunch",name:"Tandoori chicken + aloo gobi + rice",desc:"Third serving of tandoori chicken with aloo gobi and rice. Rest day, so slightly smaller portion of rice.",protein:46,carbs:68,fat:14,prep:"Sunday prep — reheat 3 min"},
+    {type:"Dinner",cls:"dinner",name:"Pork keema + rice",desc:"Pork keema over rice on rest day — swap roti for lighter digestion. Still a great protein hit.",protein:40,carbs:52,fat:18,prep:"Sunday prep — reheat 3 min"},
+    {type:"Snack",cls:"snack",name:"Banana + peanut butter",desc:"Sliced banana with 1 tbsp natural peanut butter. Simple, satisfying rest day snack.",protein:5,carbs:32,fat:8,prep:"2 min"}
+  ]},
+  Fri:{cals:2150,protein:148,carbs:215,fat:57,meals:[
+    {type:"Breakfast",cls:"breakfast",name:"Masala omelette + whey shake",desc:"Masala omelette (use your prepped chopped veg — under 10 min). Whey shake before interval run.",protein:48,carbs:22,fat:16,prep:"Fresh — 10 min"},
+    {type:"Lunch",cls:"lunch",name:"Bang bang chicken + rice + broccoli",desc:"Last bang bang serving with rice and broccoli stir-fried in garlic and soy sauce. Adds veggie hit without a sad salad.",protein:48,carbs:65,fat:14,prep:"Sunday prep + 10 min veg"},
+    {type:"Dinner",cls:"dinner",name:"Chicken tikka + rice",desc:"Quick pan-cooked chicken tikka — marinate in maple yogurt + tikka masala 30 min. Serve with rice and bhuna onions.",protein:42,carbs:58,fat:14,prep:"Fresh cook — 30 min"},
+    {type:"Snack",cls:"snack",name:"Maple yogurt + seeds + honey",desc:"Maple yogurt with chia seeds, flaxseeds, drizzle of honey. Great post-interval run recovery snack.",protein:16,carbs:20,fat:7,prep:"3 min"}
+  ]},
+  Sat:{cals:2150,protein:146,carbs:218,fat:58,meals:[
+    {type:"Breakfast",cls:"breakfast",name:"Big veggie omelette",desc:"4-egg omelette loaded with bell peppers, corn, spinach, onion, green chilli. Weekend treat — take your time.",protein:28,carbs:18,fat:18,prep:"Fresh — 12 min"},
+    {type:"Lunch",cls:"lunch",name:"Pork keema kathi rolls",desc:"Leftover pork keema wrapped in rotis with maple yogurt mint chutney — like a proper kathi roll. Eat before gym.",protein:38,carbs:58,fat:18,prep:"Sunday prep + 5 min assembly"},
+    {type:"Dinner",cls:"dinner",name:"Grilled pork chops + roasted sweet potato + zucchini",desc:"Herb-marinated pork chops pan-seared or grilled. Oven roasted sweet potato and zucchini wedges with olive oil and cumin.",protein:40,carbs:46,fat:16,prep:"Fresh cook — 25 min"},
+    {type:"Snack",cls:"snack",name:"Mango lassi + whey",desc:"Maple yogurt + mango pulp + milk blended with half a scoop whey. Unreal post-gym recovery drink.",protein:28,carbs:38,fat:5,prep:"3 min blend"}
+  ]},
+  Sun:{cals:1900,protein:126,carbs:210,fat:52,meals:[
+    {type:"Breakfast",cls:"breakfast",name:"Overnight oats + maple yogurt",desc:"Prep the night before: oats, chia seeds, milk. Morning: top with maple yogurt, banana, crushed almonds.",protein:18,carbs:58,fat:8,prep:"Prep night before"},
+    {type:"Lunch",cls:"lunch",name:"Dal tadka + rice (prep day fuel)",desc:"Simple toor dal with cumin tadka and basmati rice. Eat while you do your Sunday prep cook — easy and filling.",protein:22,carbs:68,fat:8,prep:"30 min cook"},
+    {type:"Dinner",cls:"dinner",name:"Light chicken soup + roti",desc:"Clear broth with shredded chicken, carrots, ginger. Easy on the body. Good reset before the week starts.",protein:34,carbs:38,fat:10,prep:"30 min"},
+    {type:"Snack",cls:"snack",name:"Whey shake + maple yogurt bowl",desc:"Blend: whey scoop + maple yogurt + banana + milk. Sunday refuel. Drink while watching something good.",protein:38,carbs:42,fat:6,prep:"3 min blend"}
+  ]}
+};
+
+const workoutData = [
+  {day:"Mon",type:"Run",badgeCls:"wb-run",title:"Steady-state run — 30 min",sub:"Gym treadmill or outdoor. Comfortable moderate pace — you should be able to hold a short conversation.",exercises:["Warm up: 5 min brisk walk","Run at 60–70% max heart rate for 25 min","Cool down: 5 min walk + calf stretches","Optional finisher: 10 min core (planks, bicycle crunches, dead bugs)"],targets:["Zone 2 cardio","Aerobic base"]},
+  {day:"Tue",type:"Rest",badgeCls:"wb-rest",title:"Active rest — light movement only",sub:"No structured workout. Let your body adapt to Monday's stimulus.",exercises:["15 min walk outdoors — easy pace","Gentle hip flexor + hamstring stretches","Foam roll quads and calves if accessible","Focus: hydration, 7–8 hrs sleep"],targets:["Recovery","Mobility"]},
+  {day:"Wed",type:"Circuit",badgeCls:"wb-circuit",title:"Endurance circuit — 40 min",sub:"Home or gym. High reps, short rest. Builds cardiovascular stamina + functional strength together.",exercises:["Warm up: 5 min jumping jacks or light jog","3 rounds of:","→ Jump rope or star jumps — 60 sec","→ Push-ups — 20 reps","→ Bodyweight squats — 25 reps","→ Mountain climbers — 45 sec","→ Dumbbell rows — 15 reps each side","Rest 90 sec between rounds","Cool down: 5 min stretching"],targets:["VO2 capacity","Full body endurance"]},
+  {day:"Thu",type:"Rest",badgeCls:"wb-rest",title:"Full rest day",sub:"No exercise. This is not wasted time — adaptation happens at rest.",exercises:["Sleep 7–8 hrs — non-negotiable for endurance gains","10 min foam roll or stretch if you feel tight","Plan your Sunday meal prep — saves time later"],targets:["Recovery","Adaptation"]},
+  {day:"Fri",type:"Run",badgeCls:"wb-run",title:"Interval run — 35 min",sub:"Gym treadmill or outdoor track. Intervals build stamina significantly faster than steady runs.",exercises:["Warm up: 5 min walk","8 × (1 min hard effort + 90 sec easy jog)","Cool down: 5 min walk","Total running time: ~35 min"],targets:["VO2 max","Speed endurance"]},
+  {day:"Sat",type:"Strength",badgeCls:"wb-strength",title:"Gym strength + cardio — 50 min",sub:"Full gym session. Compound lifts support endurance — stronger legs and back = better running economy.",exercises:["Warm up: 10 min treadmill or rowing machine","Goblet squats — 4×15","Dumbbell chest press — 4×12","Lat pulldown — 4×12","Dumbbell shoulder press — 3×12","Dumbbell reverse lunges — 3×12 each leg","Cardio finisher: 10 min rowing or bike at high effort"],targets:["Functional strength","Cardio endurance"]},
+  {day:"Sun",type:"Yoga",badgeCls:"wb-yoga",title:"Yoga & stretch — 20 min",sub:"Home recovery session. Prevents injury and keeps you fresh for the next week.",exercises:["Cat-cow — 10 reps","Downward dog — hold 30 sec × 3","Pigeon pose — hold 45 sec each side","Hip flexor kneeling stretch — 30 sec each","Seated spinal twist — 30 sec each side","Child's pose — hold 60 sec","Box breathing to finish — 4 rounds"],targets:["Flexibility","Parasympathetic recovery"]}
+];
+
+const groceryData = {
+  "Proteins & Eggs":[
+    {name:"Chicken thighs (boneless)",qty:"1.5 kg"},
+    {name:"Chicken breast",qty:"500g"},
+    {name:"Pork mince",qty:"500g"},
+    {name:"Pork chops",qty:"2 chops"},
+    {name:"Eggs",qty:"18 large"},
+  ],
+  "Dairy & Yogurt":[
+    {name:"Maple yogurt (Liberté)",qty:"2 large tubs"},
+    {name:"Greek yogurt, plain",qty:"500g"},
+    {name:"Milk",qty:"1.5 litres"},
+  ],
+  "Grains & Carbs":[
+    {name:"Basmati rice",qty:"1 kg"},
+    {name:"Whole wheat atta / flour",qty:"1 kg"},
+    {name:"Rolled oats",qty:"500g"},
+    {name:"Granola",qty:"300g"},
+    {name:"Whole wheat bread / toast",qty:"1 loaf"},
+  ],
+  "Vegetables":[
+    {name:"Cauliflower",qty:"1 head"},
+    {name:"Potatoes",qty:"4 medium"},
+    {name:"Bell peppers (mixed colours)",qty:"5"},
+    {name:"Broccoli",qty:"1 head"},
+    {name:"Zucchini",qty:"2 medium"},
+    {name:"Sweet potato",qty:"2 large"},
+    {name:"Onions",qty:"6 medium"},
+    {name:"Tomatoes",qty:"6 medium"},
+    {name:"Spinach",qty:"1 bag (150g)"},
+    {name:"Green chillies",qty:"10"},
+    {name:"Fresh coriander",qty:"1 large bunch"},
+    {name:"Garlic",qty:"1 full bulb"},
+    {name:"Ginger",qty:"1 large piece"},
+    {name:"Corn (frozen or canned)",qty:"1 cup"},
+    {name:"Carrots",qty:"3 (for soup)"},
+  ],
+  "Fruits":[
+    {name:"Bananas",qty:"10–12"},
+    {name:"Mango pulp (canned)",qty:"1 can (400g)"},
+    {name:"Mixed berries (frozen ok)",qty:"300g"},
+  ],
+  "Pantry & Spices":[
+    {name:"Tandoori masala",qty:"1 jar"},
+    {name:"Chicken / curry masala",qty:"1 jar"},
+    {name:"Tikka masala",qty:"1 jar"},
+    {name:"Chaat masala",qty:"1 pack"},
+    {name:"Garam masala",qty:"1 jar"},
+    {name:"Cumin seeds",qty:"Small pack"},
+    {name:"Turmeric powder",qty:"Small pack"},
+    {name:"Amchur (dry mango powder)",qty:"Small pack"},
+    {name:"Cardamom powder",qty:"Small pack"},
+    {name:"Sriracha sauce",qty:"1 bottle"},
+    {name:"Soy sauce / tamari",qty:"1 bottle"},
+    {name:"Natural peanut butter",qty:"1 jar"},
+    {name:"Honey",qty:"1 jar"},
+    {name:"Chia seeds",qty:"200g"},
+    {name:"Flaxseeds",qty:"200g"},
+    {name:"Sunflower / almond seeds",qty:"200g"},
+    {name:"Chopped almonds / pistachios",qty:"100g"},
+    {name:"Roasted chana (spiced)",qty:"1 pack"},
+    {name:"Toor or masoor dal",qty:"500g"},
+    {name:"Green peas (frozen)",qty:"300g"},
+    {name:"Olive oil",qty:"1 bottle"},
+    {name:"Whey protein — ON",qty:"Already have ✓"},
+  ]
+};
+
+const prepData = [
+  {title:"Tandoori chicken — 3 servings",time:"~30 min (incl. marinating)",detail:"Marinate 6 chicken thighs in: Greek yogurt + tandoori masala + lemon juice + ginger-garlic paste + salt. Bake at 220°C for 25 min until charred at edges. Cool, portion into 3 airtight containers with rice."},
+  {title:"Bang bang chicken — 3 servings",time:"~25 min",detail:"Pan-fry sliced chicken breast until golden. Toss in bang bang sauce: maple yogurt + sriracha + honey + minced garlic + salt. Stir-fry sliced bell peppers and onions separately. Portion into 3 containers with cooked basmati rice."},
+  {title:"Dhaba chicken curry — 2 servings",time:"~30 min",detail:"Brown 1 large onion, add ginger-garlic paste, tomatoes. Add chicken masala, salt, then chicken thighs. Add a little water and simmer covered 20 min. Portion into 2 containers. Improves with time — tastes best day 3."},
+  {title:"Pork keema with peas — 3 servings",time:"~25 min",detail:"Brown pork mince with diced onion, ginger-garlic, cumin. Add tomato, coriander powder, garam masala. Stir in frozen peas. Cook on medium 20 min until dry. Portion into 3 containers. Reheat with a splash of water."},
+  {title:"Aloo gobi sabzi — 3 servings",time:"~25 min",detail:"Toss potato cubes and cauliflower florets in olive oil, turmeric, cumin, amchur, salt. Roast at 200°C for 25 min until golden. Dry style — keeps well all week without getting soggy."},
+  {title:"Cook rice — big batch",time:"~20 min (hands-off)",detail:"Cook 2.5 cups dry basmati rice with 4.5 cups water. Once cooked, spread on a tray to cool before portioning. This avoids mushy reheated rice. Reheat with a few drops of water covered in microwave."},
+  {title:"Boil 8 eggs",time:"~12 min",detail:"Boil 8 eggs (10 min in boiling water for hard boiled). Cool in ice water, refrigerate in shell. Use throughout the week for boiled egg chaat snacks and omelette backup."},
+  {title:"Chop omelette veg — 1 container",time:"~10 min",detail:"Finely dice: 2 onions, 3 tomatoes, 6 green chillies, half a bunch of coriander. Store in one airtight container in the fridge. This makes every morning omelette a 5-min job instead of 10."}
+];
+
+let activeDay = 'Mon';
+const groceryChecked = {};
+
+function showSection(sec) {
+  ['meals','workout','grocery','prep'].forEach(s => {
+    document.getElementById(s+'-section').style.display = s===sec ? '' : 'none';
+  });
+  document.querySelectorAll('.mnav').forEach((b,i) => {
+    b.classList.toggle('active', ['meals','workout','grocery','prep'][i]===sec);
+  });
+  if(sec==='grocery') renderGrocery();
+}
+
+function setDay(d) {
+  activeDay = d;
+  renderDayTabs();
+  renderMealDay();
+}
+
+function renderDayTabs() {
+  document.getElementById('day-tabs').innerHTML = DAYS.map(d => {
+    const isWorkout = WORKOUT_DAYS.includes(d);
+    const isActive = d === activeDay;
+    let cls = 'dtab';
+    if(isWorkout) cls += ' workout-day';
+    if(isActive) cls += ' active';
+    return `<button class="${cls}" onclick="setDay('${d}')">${d}</button>`;
+  }).join('');
+}
+
+function renderMealDay() {
+  const d = mealData[activeDay];
+  const isWorkout = WORKOUT_DAYS.includes(activeDay);
+
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat-card highlight">
+      <div class="stat-l">Calories</div>
+      <div class="stat-v">${d.cals}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-l">Protein</div>
+      <div class="stat-v">${d.protein}g</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-l">Carbs</div>
+      <div class="stat-v">${d.carbs}g</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-l">Fat</div>
+      <div class="stat-v">${d.fat}g</div>
+    </div>
+  `;
+
+  document.getElementById('day-status').innerHTML = isWorkout
+    ? `<div class="workout-tag">Workout day — whey shake in morning</div>`
+    : `<div class="rest-tag">Rest day — lighter calories</div>`;
+
+  document.getElementById('meal-grid').innerHTML = d.meals.map(m => `
+    <div class="meal-card ${m.cls}">
+      <div class="meal-type">${m.type}</div>
+      <div class="meal-name">${m.name}</div>
+      <div class="meal-desc">${m.desc}</div>
+      <div class="macro-row">
+        <span class="mpill mp-p">${m.protein}g protein</span>
+        <span class="mpill mp-c">${m.carbs}g carbs</span>
+        <span class="mpill mp-f">${m.fat}g fat</span>
+      </div>
+      <div class="prep-tag">${m.prep}</div>
+    </div>
+  `).join('');
+}
+
+function renderWorkout() {
+  document.getElementById('workout-list').innerHTML = workoutData.map((w,i) => `
+    <div class="wo-day">
+      <div class="wo-header" onclick="toggleWo(${i})">
+        <div class="wo-day-label">${w.day}</div>
+        <div class="wo-title">${w.title}</div>
+        <span class="wo-badge ${w.badgeCls}">${w.type}</span>
+        <span class="wo-chevron" id="wo-chev-${i}">▾</span>
+      </div>
+      <div class="wo-body" id="wo-body-${i}">
+        <div class="wo-sub">${w.sub}</div>
+        ${w.exercises.map(e => e.startsWith('→') || e.startsWith('•')
+          ? `<div class="ex-item" style="padding-left:16px;"><span style="color:var(--muted);margin-right:6px;">→</span>${e.replace('→ ','').replace('• ','')}</div>`
+          : e.includes(':') && !e.includes('min')
+            ? `<div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:10px 0 4px;">${e}</div>`
+            : `<div class="ex-item"><span class="ex-dot"></span>${e}</div>`
+        ).join('')}
+        <div class="wo-targets">${w.targets.map(t=>`<span class="wo-target-pill">${t}</span>`).join('')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleWo(i) {
+  const body = document.getElementById('wo-body-'+i);
+  const chev = document.getElementById('wo-chev-'+i);
+  const open = body.classList.toggle('open');
+  chev.textContent = open ? '▴' : '▾';
+}
+
+function renderGrocery() {
+  const total = Object.values(groceryData).flat().length;
+  const done = Object.values(groceryChecked).filter(Boolean).length;
+  document.getElementById('g-progress-text').textContent = `${done} / ${total} items checked`;
+  document.getElementById('g-progress-bar').style.width = `${Math.round(done/total*100)}%`;
+
+  document.getElementById('grocery-list').innerHTML = Object.entries(groceryData).map(([cat, items]) => `
+    <div class="grocery-section">
+      <div class="grocery-section-title">${cat} <span class="g-count">${items.length} items</span></div>
+      <div class="grocery-grid">
+        ${items.map((item, idx) => {
+          const id = cat+'_'+idx;
+          const done = groceryChecked[id];
+          return `<div class="g-item${done?' done':''}" onclick="toggleGrocery('${id}')">
+            <div class="g-check">${done?'✓':''}</div>
+            <div>
+              <div class="g-name">${item.name}</div>
+              <div class="g-qty">${item.qty}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleGrocery(id) {
+  groceryChecked[id] = !groceryChecked[id];
+  renderGrocery();
+}
+
+function clearGrocery() {
+  Object.keys(groceryChecked).forEach(k => groceryChecked[k] = false);
+  renderGrocery();
+}
+
+function renderPrep() {
+  document.getElementById('prep-list').innerHTML = prepData.map((p,i) => `
+    <div class="prep-step">
+      <div class="prep-num">${i+1}</div>
+      <div style="flex:1">
+        <div class="prep-title">${p.title}</div>
+        <div class="prep-detail">${p.detail}</div>
+        <span class="prep-time-tag">${p.time}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Init
+renderDayTabs();
+renderMealDay();
+renderWorkout();
+renderPrep();
+</script>
+</body>
+</html>
